@@ -1,5 +1,5 @@
 import clickhouse_connect
-from settings import ch_settings
+from clickhouse_con.settings import ch_settings
 
 class ClickHouse_con:
     def __init__(self):

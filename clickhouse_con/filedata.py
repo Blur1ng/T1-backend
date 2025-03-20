@@ -1,5 +1,5 @@
 from pathlib import Path
-from ch_classes import DataChange
+from clickhouse_con.ch_classes import DataChange
 import concurrent.futures
 import ast
 
@@ -7,7 +7,7 @@ import ast
 class FileData:
     def __init__(self):
         self.path = Path(__file__).parent / "server"
-
+    
     def get_data_from_dir(self) -> dict[str, list[dict]]:
         all_data = {}
         tasks = []
