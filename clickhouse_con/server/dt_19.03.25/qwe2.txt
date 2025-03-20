@@ -1,0 +1,4 @@
+{"id":1, "name":"qdw", "event":"some_name", "time":"2025-03-19", "is_xui": True}
+{"id":2, "name":"bbb", "event":"qwd", "time":"2025-03-18", "is_xui": True}
+{"id":3, "name":"dqw", "event":"qwd", "time":"2025-03-18", "is_xui": "no"}
+{"id":4, "name":"yy1", "event":"zxc", "time":"2026-03-18", "is_xui": "penis"}
