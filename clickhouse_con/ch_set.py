@@ -7,16 +7,13 @@ class ClickHouseTable:
         self.cursor = cursor
         self.table_name = table_name
 
-    def create_table(self, parameters: dict):
-        update_parameters = []
-
-        for k, v in parameters.items():
-            update_parameters.append(f"`{k}` {self._py_type_to_ch_type(v)}")
+    def create_table(self, parameters: dict, order_by: str):
+        update_parameters = [f"`{k}` {self._py_type_to_ch_type(v)}" for k, v in parameters.items()]
 
         create_table_sql = f"""
             CREATE TABLE IF NOT EXISTS `{self.table_name}` ({', '.join(update_parameters)}) 
             ENGINE = MergeTree()
-            ORDER BY (`id`)   
+            ORDER BY (`{order_by}`)   
         """
         self.cursor.command(create_table_sql)
 
@@ -37,23 +34,11 @@ class ClickHouseTable:
     
     @staticmethod
     def _py_type_to_ch_type(value):
-        if isinstance(value, bool):
-            column_type = "UInt8"
-        elif isinstance(value, int):
-            if value >= 0:
-                column_type = "UInt64"
-            else:
-                column_type = "Int64"
-        elif isinstance(value, float):
-            column_type = "Float64"
-        elif isinstance(value, datetime):
-            column_type = "DateTime"
-        elif isinstance(value, date):
-            column_type = "Date"
-        elif value is None:
-            column_type = "Nullable(String)"        
-        else:
-            column_type = "String"
-        return column_type
+        type_mapping = {bool: "UInt8", str: "String", int: "Int64", 
+                        float: "Float64", datetime: "DateTime", date: "Date", 
+                        None: "Nullable(String)"}
+        
+        type_ = type_mapping[type(value)]
+        return type_ if type_ else "String"
 
 

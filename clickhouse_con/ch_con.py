@@ -1,17 +1,13 @@
-import os
 import clickhouse_connect
-from dotenv import load_dotenv
-
-load_dotenv()
-
+from settings import ch_settings
 
 class ClickHouse_con:
     def __init__(self):
-        self.user=os.getenv("user")
-        self.password=os.getenv("password")
-        self.host=os.getenv("host")
-        self.port=os.getenv("port")
-        self.db=os.getenv("db")
+        self.user = ch_settings.user
+        self.password = ch_settings.password
+        self.host = ch_settings.host
+        self.port = ch_settings.port
+        self.db = ch_settings.db
 
         self.cursor = None
     
