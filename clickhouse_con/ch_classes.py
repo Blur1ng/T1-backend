@@ -1,19 +1,22 @@
+import asyncio
 from dateutil import parser
 
+import logging
+logger = logging.getLogger(__name__)
 
 class DataChange:
     def __init__(self, data: list[dict]):
         self.data = data
     
-    def get_change_data(self) -> list[dict]:
+    async def get_change_data(self) -> list[dict]:
         change_data = []
         for old_dict in self.data:
-            change_data.append(self._get_true_types_from_dict(old_dict))
-
+            true_types = await self._get_true_types_from_dict(old_dict)
+            change_data.append(true_types)
         return change_data
 
     @staticmethod
-    def _get_true_types_from_dict(data: dict) -> dict:
+    async def _get_true_types_from_dict(data: dict) -> dict:
         update_dict = {}
 
         data_id = int(data.get("id"))

@@ -1,3 +1,4 @@
+import asyncio
 from clickhouse_connect.driver.httpclient import HttpClient
 from datetime import datetime, date
 
@@ -7,17 +8,16 @@ class ClickHouseTable:
         self.cursor = cursor
         self.table_name = table_name
 
-    def create_table(self, parameters: dict, order_by: str):
-        update_parameters = [f"`{k}` {self._py_type_to_ch_type(v)}" for k, v in parameters.items()]
-
+    async def create_table(self, parameters: dict, order_by: str):
+        update_parameters = [f"`{k}` {await self._py_type_to_ch_type(v)}" for k, v in parameters.items()]
         create_table_sql = f"""
             CREATE TABLE IF NOT EXISTS `{self.table_name}` ({', '.join(update_parameters)}) 
             ENGINE = MergeTree()
             ORDER BY (`{order_by}`)   
         """
-        self.cursor.command(create_table_sql)
+        await self.cursor.command(create_table_sql)
 
-    def insert_data(self, data_list: list[dict]):
+    async def insert_data(self, data_list: list[dict]):
         columns = list(data_list[0].keys())
         
         all_row_values = []
@@ -30,10 +30,10 @@ class ClickHouseTable:
                 row_values.append(v)
             all_row_values.append(row_values)
 
-        self.cursor.insert(self.table_name, all_row_values, columns)
+        await self.cursor.insert(self.table_name, all_row_values, columns)
     
     @staticmethod
-    def _py_type_to_ch_type(value):
+    async def _py_type_to_ch_type(value):
         type_mapping = {bool: "UInt8", str: "String", int: "Int64", 
                         float: "Float64", datetime: "DateTime", date: "Date", 
                         None: "Nullable(String)"}

@@ -2,13 +2,17 @@ from pathlib import Path
 from clickhouse_con.ch_classes import DataChange
 import concurrent.futures
 import ast
+from clickhouse_con.settings import ch_settings
+import asyncio
+import logging
+logger = logging.getLogger(__name__)
 
 
 class FileData:
     def __init__(self):
-        self.path = Path(__file__).parent / "server"
+        self.path = Path(__file__).parent / ch_settings.MAINDIR
     
-    def get_data_from_dir(self) -> dict[str, list[dict]]:
+    async def get_data_from_dir(self) -> dict:
         all_data = {}
         tasks = []
         
@@ -25,28 +29,37 @@ class FileData:
             for file_path in next_dir_files:
                 if file_path.name == "CHECK" or not file_path.is_file():
                     continue
-                    
+                
                 table_name = file_path.stem.replace(".", "_")
-                tasks.append((file_path, table_name))
+                tasks.append((self._process_file(file_path), table_name))
 
-        with concurrent.futures.ThreadPoolExecutor(max_workers=len(tasks)) as executor:
-            future_start = {executor.submit(self._get_data_from_next_dir, file_path): table_name for file_path, table_name in tasks}
-            
-            for future_now in concurrent.futures.as_completed(future_start):
-                table_name = future_start[future_now]
-                all_data[table_name] = future_now.result()
+        # Ждем завершения всех задач
+        if tasks:
+            coroutines, table_names = zip(*tasks)
+            results = await asyncio.gather(*coroutines)
+
+            for table_name, result in zip(table_names, results):
+                all_data[table_name] = result
 
         return all_data
+    
+    async def _process_file(self, file_path: Path,):
+        data = await self._read_file(file_path)
         
-    def _get_data_from_next_dir(self, file_path: Path):
+        change_data = await DataChange(data).get_change_data()
+        return change_data
+    
+    async def _read_file(self, file_path: Path) -> list[dict]:
         data = []
-        try:
-            with file_path.open("r") as f:
-                for line in f:
-                    data.append(ast.literal_eval(line))
-                        
-            change_data = DataChange(data).get_change_data()
-            return change_data
-        except Exception as e:
-            print(f"Не удалось получить данные из {file_path}")
-            raise
+        content = await asyncio.to_thread(self._read_file_sync, file_path)
+        
+        for line in content.splitlines():
+            parsed_line = await asyncio.to_thread(ast.literal_eval, line)
+            data.append(parsed_line)
+                
+        return data
+    
+    def _read_file_sync(self, file_path: Path) -> str:
+        with file_path.open("r") as f:
+            return f.read()
+        

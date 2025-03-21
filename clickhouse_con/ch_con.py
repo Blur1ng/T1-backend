@@ -1,6 +1,10 @@
 import clickhouse_connect
 from clickhouse_con.settings import ch_settings
 
+import logging
+logger = logging.getLogger(__name__)
+
+
 class ClickHouse_con:
     def __init__(self):
         self.user = ch_settings.user
@@ -11,8 +15,8 @@ class ClickHouse_con:
 
         self.cursor = None
     
-    def connect(self):
-        client = clickhouse_connect.get_client(
+    async def connect(self):
+        client = await clickhouse_connect.create_async_client(
             host=self.host, 
             port=self.port, 
             username=self.user, 
