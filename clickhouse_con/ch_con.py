@@ -12,7 +12,6 @@ class ClickHouse_con:
         self.host = ch_settings.host
         self.port = ch_settings.port
         self.db = ch_settings.db
-
         self.cursor = None
     
     async def connect(self):
