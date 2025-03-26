@@ -1,0 +1,4 @@
+{"id":1, "name":"AAA", "event":"some_name", "time":"2025-03-19", "is_something": True}
+{"id":2, "name":"QWDNJNQWLD", "event":"qwd", "time":"2025-03-18", "is_something": True}
+{"id":3, "name":"bbb", "event":"qwd", "time":"2025-03-18", "is_something": "no"}
+{"id":4, "name":"yy1", "event":"DWQLKQDW", "time":"2026-03-18", "is_something": "фыв"}
